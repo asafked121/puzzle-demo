@@ -1,1 +1,55 @@
-<h1>Hello</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4x4 Grid Puzzle</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #f0f0f0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-template-rows: repeat(4, 100px);
+      gap: 10px;
+    }
+    .piece {
+      background-color: #ccc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .piece:hover {
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="grid" id="grid"></div>
+  <script>
+    // Dynamically create 16 pieces
+    const grid = document.getElementById('grid');
+    for (let i = 0; i < 16; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'piece';
+      piece.textContent = i + 1;
+      piece.dataset.index = i;
+      piece.addEventListener('click', () => {
+        // Action when clicked
+        console.log('Clicked piece', piece.dataset.index);
+        alert('You clicked piece ' + (parseInt(piece.dataset.index) + 1));
+      });
+      grid.appendChild(piece);
+    }
+  </script>
+</body>
+</html>
