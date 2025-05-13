@@ -14,13 +14,12 @@
       background: #f0f0f0;
     }
     .grid {
-      display: grid;
-      grid-template-columns: repeat(4, 100px);
-      grid-template-rows: repeat(4, 100px);
-      gap: 10px;
+      position: relative;
+      margin: 0 auto;
     }
     .piece {
-      background-color: #ccc;
+      /* background-color: #d8b1b100; */
+      position: absolute;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -36,32 +35,96 @@
 <body>
   <div class="grid" id="grid"></div>
   <script>
-    // Define array of SVG file paths
-    const svgShapes = [
-      'shapes/1.svg',
-    ];
-    // Dynamically create 16 pieces
-    const grid = document.getElementById('grid');
-    for (let i = 0; i < 16; i++) {
-      const piece = document.createElement('div');
-      piece.className = 'piece';
-      // piece.textContent = i + 1;
-      const img = document.createElement('img');
-      // choose a shape based on index (cycles through shapes array)
-      img.src = svgShapes[i % svgShapes.length];
-      img.alt = 'Piece ' + (i + 1);
-      img.style.width = '80%';
-      img.style.height = '80%';
-      img.color = 'green';
-      piece.appendChild(img);
-      piece.dataset.index = i;
-      piece.addEventListener('click', () => {
-        // Action when clicked
-        console.log('Clicked piece', piece.dataset.index);
-        alert('You clicked piece ' + (parseInt(piece.dataset.index) + 1));
-      });
-      grid.appendChild(piece);
+    // Configuration
+    const cols = 4;
+    const rows = 4;
+    const cellSize = 220;   // size of each piece in pixels
+    const overlap = 85;     // overlap amount in pixels
+    const gridSize = cols * cellSize - (cols - 1) * overlap;
+
+    // Helper to load and parse an SVG file inline
+    async function loadSVG(path) {
+      const resp = await fetch(path);
+      const text = await resp.text();
+      const parser = new DOMParser();
+      return parser.parseFromString(text, 'image/svg+xml').documentElement;
     }
+
+    // Array of SVG file paths
+    const svgShapes = [
+      'shapes/1.svg', 
+    ];
+
+    // Corresponding fill colors for each shape
+    const shapeColors = [
+      '#F9F572', // yellow
+      '#3C449F', // blue
+      '#EA6162'  // red
+    ];
+
+    (async () => {
+      const grid = document.getElementById('grid');
+      // Apply dynamic grid size
+      grid.style.width = `${gridSize}px`;
+      grid.style.height = `${gridSize}px`;
+      for (let i = 0; i < 16; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'piece';
+        piece.dataset.index = i;
+
+        // Set piece dimensions
+        piece.style.width = `${cellSize}px`;
+        piece.style.height = `${cellSize}px`;
+
+        // Position pieces so they overlap by 50px per row/col
+        const col = i % 4;
+        const row = Math.floor(i / 4);
+        piece.style.left = `${col * (cellSize - overlap)}px`;
+        piece.style.top  = `${row * (cellSize - overlap)}px`;
+
+        // load inline SVG and set attributes
+        const svg = await loadSVG(svgShapes[i % svgShapes.length]);
+        svg.setAttribute('width', '99%');
+        svg.setAttribute('height', '99%');
+
+        // Rotate SVG: 90° per column plus an extra 90° per row
+        const angle = (col + row) * 90;
+        svg.style.transform = `rotate(${angle}deg)`;
+        svg.style.transformOrigin = '50% 50%';
+
+        // Try to extract the first <path> element
+        const pathEl = svg.querySelector('path');
+        if (pathEl && typeof pathEl.getTotalLength === 'function') {
+          const totalLength = pathEl.getTotalLength();
+          const numSamples = 100;
+          const pts = [];
+          for (let s = 0; s <= numSamples; s++) {
+            const pt = pathEl.getPointAtLength((s/numSamples) * totalLength);
+            pts.push(`${pt.x},${pt.y}`);
+          }
+          // Create a polygon from sampled points
+          const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          poly.setAttribute('points', pts.join(' '));
+          poly.setAttribute('fill', shapeColors[i % shapeColors.length]);
+          poly.setAttribute('stroke', 'black');
+          poly.setAttribute('stroke-width', '10');
+          // Clear existing children and append the polygon
+          while (svg.firstChild) svg.removeChild(svg.firstChild);
+          svg.appendChild(poly);
+        } else {
+          // Fallback: color the SVG fill directly
+          svg.setAttribute('fill', shapeColors[i % shapeColors.length]);
+        }
+
+        piece.appendChild(svg);
+
+        piece.addEventListener('click', () => {
+          console.log('Clicked piece', piece.dataset.index);
+          alert('You clicked piece ' + (parseInt(piece.dataset.index) + 1));
+        });
+        grid.appendChild(piece);
+      }
+    })();
   </script>
 </body>
 </html>
