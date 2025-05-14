@@ -26,10 +26,11 @@
       font-size: 1.5rem;
       cursor: pointer;
       transition: transform 0.2s;
-      background-color: aqua;
+      /* background-color: aqua; */
     }
     .piece:hover {
-      transform: scale(1.1);
+      transform: scale(1.15);
+      z-index: 1;
     }
   </style>
 </head>
@@ -39,8 +40,8 @@
     // Configuration
     const cols = 4;
     const rows = 4;
-    const cellSize = 50;     // hitbox size of each piece in pixels
-    const spacing  = 86;      // margin between pieces in pixels
+    const cellSize = 100;     // hitbox size of each piece in pixels
+    const spacing  = 36;      // margin between pieces in pixels
     const svgSize  = 220;     // constant graphic size for SVG
     const svgOffset = (svgSize - cellSize) / 2; // centering offset
     // grid dimensions including spacing between cells
